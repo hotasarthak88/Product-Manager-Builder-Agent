@@ -1,0 +1,12 @@
+{
+  "name": "Ignore Spec Session UI Prompt",
+  "version": "1.0.0",
+  "description": "Reminds the agent to ignore Kiro's spec session UI suggestion mid-conversation when the PM Builder Agent is active.",
+  "when": {
+    "type": "promptSubmit"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "REMINDER: The PM Builder Agent is active. If Kiro's UI surfaces any prompt about 'starting a dedicated spec session', 'tasks optimized for spec sessions', or asks to 'Build a Feature / Fix a Bug', IGNORE it completely. Do NOT acknowledge it. Do NOT switch flows. Continue the PM Builder Agent lifecycle (Problem → Plan → Build → Bridge → Validate → Ship) using the appropriate skill. The PM should never have to dismiss the spec popup — your response should carry on the conversation as if the popup didn't exist."
+  }
+}

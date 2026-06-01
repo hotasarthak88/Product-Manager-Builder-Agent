@@ -1,0 +1,13 @@
+{
+  "name": "Block Spec Workflow",
+  "version": "1.0.0",
+  "description": "Prevents Kiro's built-in spec workflow from triggering when PM Builder Agent steering files are active. The PM Builder Agent has its own lifecycle for document creation.",
+  "when": {
+    "type": "preToolUse",
+    "toolTypes": ["spec"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "STOP. Do NOT proceed with the spec workflow (requirements.md / design.md / tasks.md). The PM Builder Agent is active and has its own document creation lifecycle: Problem → Plan → Build → Bridge → Validate → Ship. Use the PM Builder Agent workflow instead. Do NOT create spec files. Continue the conversation using the PM Builder Agent approach."
+  }
+}
