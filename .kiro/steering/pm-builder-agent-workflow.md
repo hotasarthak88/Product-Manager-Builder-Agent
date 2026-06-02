@@ -6,6 +6,7 @@
 2. PLAN — Define what to build (BRDs, PRDs, feature specs, executive summaries)
 3. BUILD — Make it tangible (prototypes, mocks, POC documentation)
 3.5. BRIDGE — Scaffold code and hand off to engineering
+3.7. QA — Browser-based automated testing against acceptance criteria (requires Playwright MCP)
 4. VALIDATE — Confirm with stakeholders (workshops, alignment analysis)
 5. SHIP — Track execution (weekly logs, risk tracking, launch readiness)
 6. LEARN — Capture what worked (patterns, recipes, retrospectives)
