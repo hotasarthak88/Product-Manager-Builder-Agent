@@ -20,6 +20,9 @@ dist/
 .env.local
 .env.*.local
 
+# Playwright MCP temp files
+.playwright-mcp/
+
 # Kiro settings (user-specific, not part of the agent definition)
 .kiro/settings/
 
