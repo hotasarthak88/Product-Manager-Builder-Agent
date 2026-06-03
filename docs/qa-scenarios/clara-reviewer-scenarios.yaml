@@ -1,0 +1,298 @@
+# CLARA Reviews AI Assistant — QA Test Scenarios
+# Author: sarthah
+# Date: June 3, 2026
+#
+# USAGE: Say "Run QA scenarios" or "Run scenarios on {url}"
+#
+# SAFETY: Destructive tests (modify review state) require PM to say
+#          "test this one" for the specific review URL before execution.
+#
+# NAMING CONVENTION: When PM says "test this one" for a review URL,
+#          that review is approved for destructive testing in this session only.
+
+metadata:
+  product: "CLARA Reviews AI Assistant"
+  environment: "gamma.grc.a2z.com"
+  version: "1.0"
+  last_updated: "2026-06-03"
+
+# ─────────────────────────────────────────────────────────────────
+# NON-DESTRUCTIVE SCENARIOS (safe to run on any review)
+# ─────────────────────────────────────────────────────────────────
+
+scenarios:
+
+  - name: "Cross-surface consistency check"
+    description: "Verify inline CLARA cards match Full Analysis content for all questions"
+    destructive: false
+    steps:
+      - action: navigate_to_review
+      - action: extract_inline_content
+        params:
+          extract: all_questions
+      - action: open_full_analysis
+      - action: extract_full_analysis_content
+        params:
+          extract: all_questions
+      - action: close_modal
+    assertions:
+      - check: inline_insight_matches_full_analysis_insight
+        for_each: question
+        severity_if_fail: P1
+        flag: CONTENT_VARIANCE
+      - check: inline_insight_is_not_reasoning
+        for_each: question
+        severity_if_fail: P1
+        flag: REASONING_AS_INSIGHT
+      - check: full_analysis_flags_propagated_to_inline
+        for_each: question
+        severity_if_fail: P1
+        flag: FLAG_NOT_PROPAGATED
+      - check: confidence_aligns_with_recommendation
+        for_each: question
+        severity_if_fail: P0
+        flag: CONFIDENCE_MISMATCH
+
+  - name: "Jargon and internal field name detection"
+    description: "Scan all CLARA text for internal identifiers that shouldn't be user-facing"
+    destructive: false
+    steps:
+      - action: extract_all_clara_text
+    assertions:
+      - check: no_camel_case_identifiers
+        exclude: ["CloudWatch", "QuickSight", "DataCentral", "GRC-Next"]
+        severity_if_fail: P1
+        flag: JARGON_LEAK
+      - check: no_internal_field_references
+        patterns: ["ConfirmationField", "reviewSetId", "entityType", "complianceFlag", "empty array"]
+        severity_if_fail: P1
+        flag: JARGON_LEAK
+
+  - name: "Evidence state vs recommendation consistency"
+    description: "Check if evidence-related recommendations match actual attachment state"
+    destructive: false
+    steps:
+      - action: count_attachments
+      - action: check_evidence_matrix
+      - action: extract_q3_recommendation
+    assertions:
+      - check: if_attachments_zero_then_no_unconditional_yes
+        question: 3  # "Is evidence available and retained?"
+        severity_if_fail: P0
+        flag: REC_CONTRADICTS_STATE
+      - check: evidence_matrix_gaps_flagged_inline
+        severity_if_fail: P0
+        flag: EVIDENCE_GAP_NOT_FLAGGED
+
+  - name: "Historical accuracy verification"
+    description: "Verify claims about 'all prior reviews' match actual historical data"
+    destructive: false
+    steps:
+      - action: extract_all_insights
+      - action: extract_historical_pattern_from_full_analysis
+    assertions:
+      - check: if_claims_all_yes_then_no_historical_no_exists
+        severity_if_fail: P1
+        flag: HISTORICAL_INACCURACY
+      - check: historical_no_prominently_flagged
+        condition: "any prior review answered No within 4 quarters"
+        severity_if_fail: P2
+        flag: HISTORICAL_FLAG_WEAK
+
+  - name: "Control-type awareness check"
+    description: "Verify CLARA correctly applies N/A for control-type-scoped questions"
+    destructive: false
+    steps:
+      - action: detect_control_type
+      - action: extract_recommendations_for_scoped_questions
+    assertions:
+      - check: it_general_control_gets_na_for_manual_questions
+        condition: "control_type == 'IT General Control'"
+        questions: [3]  # "For Manual controls only"
+        severity_if_fail: P1
+        flag: CONTROL_TYPE_MISMATCH
+      - check: automated_control_gets_na_for_ipa
+        condition: "control_type in ['IT General Control'] and no IPA documented"
+        questions: [10, 11, 12, 13]
+        severity_if_fail: P1
+        flag: CONTROL_TYPE_MISMATCH
+      - check: manual_control_does_not_get_na_for_ipa
+        condition: "control_type in ['Manual Control', 'IT Dependent Manual Control'] and IPA documented"
+        questions: [10, 11, 12, 13]
+        severity_if_fail: P1
+        flag: CONTROL_TYPE_MISMATCH
+
+  - name: "Attestation language detection"
+    description: "Flag pre-filled responses that read as completed attestations"
+    destructive: false
+    steps:
+      - action: extract_all_recommendations
+    assertions:
+      - check: no_unconditional_attestation_language
+        patterns: ["I reviewed", "I confirmed", "I verified", "I validated"]
+        severity_if_fail: P1
+        flag: ATTESTATION_PREFILL
+        message: "Recommendation pre-fills completed attestation — reviewer may accept without performing action"
+
+  - name: "Executive summary quality check"
+    description: "Verify summary doesn't lead with obvious information"
+    destructive: false
+    steps:
+      - action: extract_executive_summary
+    assertions:
+      - check: first_sentence_is_not_obvious
+        obvious_patterns:
+          - "This is a fresh draft review"
+          - "All 13 questions are currently blank"
+          - "This draft review has 13 questions"
+          - "questions are blank"
+        severity_if_fail: P2
+        flag: OBVIOUS_STATEMENT
+      - check: summary_contains_actionable_content
+        required_elements:
+          - "specific evidence name OR required action"
+          - "flag or risk if any exist"
+        severity_if_fail: P2
+        flag: NOT_ACTIONABLE
+
+  - name: "Frequency inconsistency detection"
+    description: "Check if CLARA flags contradictions between control page fields"
+    destructive: false
+    steps:
+      - action: extract_control_frequency
+      - action: extract_when_performed
+      - action: check_if_discrepancy_flagged_inline
+    assertions:
+      - check: if_frequency_mismatch_then_flagged_at_q1
+        severity_if_fail: P1
+        flag: DISCREPANCY_NOT_FLAGGED
+
+# ─────────────────────────────────────────────────────────────────
+# DESTRUCTIVE SCENARIOS (require PM to say "test this one")
+# ─────────────────────────────────────────────────────────────────
+
+  - name: "Invalid evidence — wrong name and description"
+    description: "Attach a file with obviously wrong name/description and verify CLARA flags it"
+    destructive: true
+    preconditions:
+      - review_state: "draft"
+      - pm_approved: true  # PM must say "test this one"
+    steps:
+      - action: attach_file
+        params:
+          file_path: "docs/qa-test-files/random-evidence.pdf"
+          name: "Random Evidence Test"
+          description: "Test file — not related to this control"
+      - action: click_reanalyze
+      - action: wait_for_reanalysis
+        timeout_seconds: 60
+    assertions:
+      - surface: full_analysis
+        check: detects_invalid_evidence
+        expected: true
+        severity_if_fail: P1
+      - surface: inline_q3
+        check: contains_evidence_warning
+        expected: true
+        severity_if_fail: P0
+      - surface: attachment_table
+        check: shows_validity_indicator
+        expected: true
+        severity_if_fail: P0
+    cleanup:
+      - action: remove_attachment
+        params:
+          name: "Random Evidence Test"
+
+  - name: "Correct name, wrong content"
+    description: "Attach file with matching name but completely unrelated content"
+    destructive: true
+    preconditions:
+      - review_state: "draft"
+      - pm_approved: true
+    steps:
+      - action: attach_file
+        params:
+          file_path: "docs/qa-test-files/wrong-content-report.pdf"
+          name: "Clearwater Audit Report"
+          description: "Q2 2026 Clearwater compliance report"
+      - action: click_reanalyze
+      - action: wait_for_reanalysis
+        timeout_seconds: 60
+    assertions:
+      - surface: full_analysis_q3
+        check: detects_content_mismatch
+        expected: true
+      - surface: full_analysis_q3
+        check: confidence_is_low
+        expected: true
+      - surface: full_analysis_q3
+        check: suggested_response_adapts
+        expected: "conditional or flagged"
+        severity_if_fail: P0
+      - surface: inline_q3
+        check: shows_content_mismatch_warning
+        expected: true
+        severity_if_fail: P0
+    cleanup:
+      - action: remove_attachment
+        params:
+          name: "Clearwater Audit Report"
+
+  - name: "Vague response triggers quality feedback"
+    description: "Type a vague response and verify real-time feedback fires"
+    destructive: true
+    preconditions:
+      - review_state: "draft"
+      - pm_approved: true
+    steps:
+      - action: type_in_field
+        params:
+          question: 1
+          text: "Reviewed"
+      - action: blur_field
+      - action: wait
+        timeout_seconds: 5
+    assertions:
+      - surface: inline_q1
+        check: shows_quality_warning
+        expected: true
+        message: "Vague response 'Reviewed' should trigger guidance to add specific details"
+        severity_if_fail: P2
+    cleanup:
+      - action: clear_field
+        params:
+          question: 1
+
+  - name: "Re-analyze updates recommendations after state change"
+    description: "Verify clicking Re-analyze updates CLARA outputs when evidence is added/removed"
+    destructive: true
+    preconditions:
+      - review_state: "draft"
+      - pm_approved: true
+    steps:
+      - action: capture_baseline
+        params:
+          capture: [executive_summary, q3_recommendation, q3_insight]
+      - action: attach_file
+        params:
+          file_path: "docs/qa-test-files/random-evidence.pdf"
+          name: "Test Evidence"
+          description: "Test"
+      - action: click_reanalyze
+      - action: wait_for_reanalysis
+        timeout_seconds: 60
+      - action: capture_new_state
+        params:
+          capture: [executive_summary, q3_recommendation, q3_insight]
+    assertions:
+      - check: executive_summary_changed
+        expected: true
+        message: "Executive summary should reflect new attachment"
+      - check: q3_insight_references_new_file
+        expected: true
+        message: "Q3 insight should acknowledge new evidence (valid or invalid)"
+    cleanup:
+      - action: remove_attachment
+        params:
+          name: "Test Evidence"

@@ -1,0 +1,530 @@
+# CLARA Reviews AI Assistant — BRD Acceptance Criteria Registry
+# Source: BRD (brd-clara-reviews-ai-assistant.md)
+# Generated: June 3, 2026
+#
+# Each criterion maps to a testable assertion that can be validated
+# against a live gamma review.
+
+metadata:
+  source_document: "BRD - CLARA Reviews AI Assistant"
+  total_epics: 11
+  total_criteria: 52
+  last_updated: "2026-06-03"
+
+# ═══════════════════════════════════════════════════════════════════
+# EPIC 1: Pre-fill and Variance Detection (P0)
+# ═══════════════════════════════════════════════════════════════════
+
+criteria:
+
+  - id: "E1.1-01"
+    epic: "Epic-1.1"
+    requirement: "Change detection query response within 3 seconds"
+    test_method: "Measure time from page open to CLARA content visible"
+    threshold: "< 3000ms (90th percentile)"
+    validation: "timestamp delta between page load and first CLARA content render"
+    automatable: true
+
+  - id: "E1.1-02"
+    epic: "Epic-1.1"
+    requirement: "No changes detected shows green alert with timestamp"
+    test_method: "Open review where no properties changed since last period"
+    expected: "Green 'No material changes detected' alert with timestamp"
+    validation: "Check for green alert element OR positive change confirmation"
+    automatable: true
+
+  - id: "E1.1-03"
+    epic: "Epic-1.1"
+    requirement: "Changes detected shows organized delta summary"
+    test_method: "Open review where properties changed (e.g., new owner added)"
+    expected: "Delta summary with: what changed, when, who made the change"
+    validation: "Check for change categorization (Properties, Control Changes, etc.)"
+    automatable: true
+
+  - id: "E1.1-04"
+    epic: "Epic-1.1"
+    requirement: "Changes categorized into types"
+    test_method: "Verify change categories in delta summary"
+    expected: "Categories include: Properties, Control Changes, ITGC Changes, Monitoring Config"
+    validation: "Parse delta summary for category labels"
+    automatable: true
+
+  - id: "E1.1-05"
+    epic: "Epic-1.1"
+    requirement: "Each change includes direct link to details"
+    test_method: "Check each change item in delta summary for clickable link"
+    expected: "Every change has a navigation link"
+    validation: "Check for <a> or button elements within change items"
+    automatable: true
+
+  - id: "E1.2-01"
+    epic: "Epic-1.2"
+    requirement: "Pre-fill suggested response with concrete data points"
+    test_method: "Check recommendation text for specificity"
+    expected: "Contains at least one of: date, count/number, proper noun, team name"
+    validation: "Regex check for date patterns, numbers, capitalized names"
+    automatable: true
+
+  - id: "E1.2-02"
+    epic: "Epic-1.2"
+    requirement: "One-click accept/edit/discard for pre-filled responses"
+    test_method: "Verify three interaction options exist on CLARA recommendation"
+    expected: "Accept (click to use), Edit (modify before using), Discard (clear)"
+    validation: "Check for Copy button, editable field, and clear/discard option"
+    automatable: true
+
+  - id: "E1.3-01"
+    epic: "Epic-1.3"
+    requirement: "Side-by-side comparison view with color coding"
+    test_method: "Look for 'View Detailed Comparison' button when changes detected"
+    expected: "Button present; clicking opens diff view with green/red/yellow coding"
+    validation: "Check for comparison button element"
+    automatable: true
+
+# ═══════════════════════════════════════════════════════════════════
+# EPIC 2: Monitoring Registration Checks (P0)
+# ═══════════════════════════════════════════════════════════════════
+
+  - id: "E2.1-01"
+    epic: "Epic-2.1"
+    requirement: "Monitoring registration query within 3 seconds"
+    test_method: "Measure time from page load to monitoring status display"
+    threshold: "< 3000ms (90th percentile)"
+    validation: "Timestamp delta; loading indicator shown during query"
+    automatable: true
+    note: "Only applicable for Application-type reviews"
+
+  - id: "E2.1-02"
+    epic: "Epic-2.1"
+    requirement: "All targets registered shows green success alert"
+    test_method: "Open Application review with all targets registered"
+    expected: "Green alert: '✓ All monitoring complete - All N targets registered'"
+    validation: "Check for green alert with registration count and timestamp"
+    automatable: true
+    note: "Requires Application review in gamma with monitoring"
+
+  - id: "E2.1-03"
+    epic: "Epic-2.1"
+    requirement: "Monitoring gaps show red alert with target details"
+    test_method: "Open Application review with unregistered targets"
+    expected: "Red alert with gap count; expandable list with target type, date, account"
+    validation: "Check for red alert and expandable details"
+    automatable: true
+
+  - id: "E2.1-04"
+    epic: "Epic-2.1"
+    requirement: "'Register Now' button for each gap"
+    test_method: "Check each unregistered target has action button"
+    expected: "Link/button to Delta registration workflow"
+    validation: "Check for 'Register Now' elements in gap list"
+    automatable: true
+
+  - id: "E2.2-01"
+    epic: "Epic-2.2"
+    requirement: "Re-validate button available after gaps detected"
+    test_method: "After gaps shown, look for re-validation button"
+    expected: "'Re-validate Monitoring' button present and clickable"
+    validation: "Element check"
+    automatable: true
+
+  - id: "E2.3-01"
+    epic: "Epic-2.3"
+    requirement: "API failure shows warning with manual fallback"
+    test_method: "Simulate or detect API timeout (>5 seconds)"
+    expected: "Warning message + manual verification link"
+    validation: "Check for warning message and fallback link"
+    automatable: false
+    note: "Requires network simulation or known API downtime"
+
+# ═══════════════════════════════════════════════════════════════════
+# EPIC 3: Smart N/A Detection (P0)
+# ═══════════════════════════════════════════════════════════════════
+
+  - id: "E3.1-01"
+    epic: "Epic-3.1"
+    requirement: "Auto-detect N/A for inapplicable questions"
+    test_method: "IT General Control → check Carnaval question recommendation"
+    expected: "N/A pre-selected with explanation referencing alternative monitoring"
+    validation: "Check recommendation = N/A AND insight mentions alternative"
+    automatable: true
+
+  - id: "E3.1-02"
+    epic: "Epic-3.1"
+    requirement: "N/A explanation includes specific details"
+    test_method: "Check N/A recommendation insight text"
+    expected: "Includes monitoring system name and alarm count (e.g., 'CloudWatch, 47 alarms')"
+    validation: "Insight contains numbers AND system name"
+    automatable: true
+
+  - id: "E3.1-03"
+    epic: "Epic-3.1"
+    requirement: "Reviewer can override N/A selection"
+    test_method: "Verify radio buttons for Yes/No still selectable after N/A recommended"
+    expected: "Other options (Yes, No) remain interactive"
+    validation: "Radio buttons not disabled"
+    automatable: true
+
+# ═══════════════════════════════════════════════════════════════════
+# EPIC 4: Evidence Validation (P0)
+# ═══════════════════════════════════════════════════════════════════
+
+  - id: "E4.1-01"
+    epic: "Epic-4.1"
+    requirement: "Evidence completeness validation per test procedure"
+    test_method: "Check if evidence matrix gaps are flagged"
+    expected: "Clear error for missing evidence with category and location"
+    validation: "If evidence_matrix shows 'No evidence found' → CLARA flags it inline"
+    automatable: true
+
+  - id: "E4.1-02"
+    epic: "Epic-4.1"
+    requirement: "Actionable guidance for missing evidence"
+    test_method: "When evidence gap flagged, check for fix instructions"
+    expected: "'Attach repository link' or 'Upload supporting document' guidance"
+    validation: "Flag text contains action verb + specific document type"
+    automatable: true
+
+  - id: "E4.1-03"
+    epic: "Epic-4.1"
+    requirement: "Direct navigation to affected step"
+    test_method: "Check evidence gap flag for link to the relevant step"
+    expected: "Clickable link that scrolls/navigates to the step with missing evidence"
+    validation: "Check for anchor link or button with navigation behavior"
+    automatable: true
+
+  - id: "E4.2-01"
+    epic: "Epic-4.2"
+    requirement: "Evidence link accessibility validation"
+    test_method: "Check if CLARA validates URLs in evidence fields"
+    expected: "Broken links shown with status code, [Test Again], [Replace Link]"
+    validation: "Check for link validation results in evidence section"
+    automatable: true
+
+  - id: "E4.2-02"
+    epic: "Epic-4.2"
+    requirement: "Acknowledged option for intentionally private links"
+    test_method: "Check for 'Acknowledged' marking option on inaccessible links"
+    expected: "'Mark as Acknowledged' option available"
+    validation: "Element check"
+    automatable: true
+
+# ═══════════════════════════════════════════════════════════════════
+# EPIC 5: Rejection-to-Checklist Translation (P0)
+# ═══════════════════════════════════════════════════════════════════
+
+  - id: "E5.1-01"
+    epic: "Epic-5.1"
+    requirement: "Rejection triggers checklist within 5 seconds"
+    test_method: "Open rejected review, measure time to checklist display"
+    expected: "Banner + checklist within 5 seconds of page load"
+    validation: "Check for 'Review Rejected' banner and checklist elements"
+    automatable: true
+    note: "Requires review in Rejected state"
+
+  - id: "E5.1-02"
+    epic: "Epic-5.1"
+    requirement: "Checklist has structured action items"
+    test_method: "Verify checklist structure for each item"
+    expected: "Each item has: Title, Issue, Required Fix, How to Fix, Estimated Time, Resources"
+    validation: "Parse checklist items for required fields"
+    automatable: true
+    note: "Requires rejected review"
+
+  - id: "E5.2-01"
+    epic: "Epic-5.2"
+    requirement: "Checklist items can be validated before re-submit"
+    test_method: "Check off items, verify CLARA validates where possible"
+    expected: "'Verified' or 'Please verify manually' status per item"
+    validation: "Check for validation status indicators"
+    automatable: true
+    destructive: true
+    note: "Requires rejected review + safe to modify"
+
+  - id: "E5.2-02"
+    epic: "Epic-5.2"
+    requirement: "Warning if re-submitting without fixing all items"
+    test_method: "Attempt re-submit with unchecked items"
+    expected: "Blocking warning with [Go Back and Fix] and [Resubmit Anyway] options"
+    validation: "Check for warning modal/banner on submit attempt"
+    automatable: true
+    destructive: true
+
+# ═══════════════════════════════════════════════════════════════════
+# EPIC 6: Approver Summary and Risk Flags (P0)
+# ═══════════════════════════════════════════════════════════════════
+
+  - id: "E6.1-01"
+    epic: "Epic-6.1"
+    requirement: "Summary auto-generates in <3 seconds for approver"
+    test_method: "Open submitted review as approver, measure time to summary"
+    expected: "Summary visible within 3 seconds"
+    validation: "Timestamp delta from page load to summary element visible"
+    automatable: true
+    note: "Requires submitted review + approver access"
+
+  - id: "E6.1-02"
+    epic: "Epic-6.1"
+    requirement: "Qualitative readiness status with color coding (no numeric score)"
+    test_method: "Check summary for color-coded status"
+    expected: "Green/Blue/Yellow/Red label (Excellent/Good/Fair/Needs attention)"
+    validation: "Check for color-coded element; verify NO numeric percentage displayed"
+    automatable: true
+
+  - id: "E6.1-03"
+    epic: "Epic-6.1"
+    requirement: "5-7 key assertions in plain language"
+    test_method: "Count and evaluate key assertions in summary"
+    expected: "5-7 assertions; plain language; each summarizes a response"
+    validation: "Count assertion items; verify count between 5-7"
+    automatable: true
+
+  - id: "E6.1-04"
+    epic: "Epic-6.1"
+    requirement: "Variance vs last quarter with +/- indicators"
+    test_method: "Check summary for change indicators"
+    expected: "Delta format (e.g., 'Control count: 12→14 (+2)')"
+    validation: "Check for arrow or +/- indicators in summary"
+    automatable: true
+
+  - id: "E6.2-01"
+    epic: "Epic-6.2"
+    requirement: "Risk flags with severity classification"
+    test_method: "Open review with issues, check for flags"
+    expected: "Flags marked CRITICAL / WARNING / INFO"
+    validation: "Check for severity-labeled flag elements"
+    automatable: true
+
+  - id: "E6.2-02"
+    epic: "Epic-6.2"
+    requirement: "No false flags on clean reviews"
+    test_method: "Open clean review, verify no flags"
+    expected: "'No issues detected' or equivalent positive message"
+    validation: "Absence of CRITICAL/WARNING flags"
+    automatable: true
+
+  - id: "E6.3-01"
+    epic: "Epic-6.3"
+    requirement: "Fast-track recommendation for clean reviews"
+    test_method: "Open clean submitted review as approver"
+    expected: "'Fast-Track Approval Recommended' with [Approve Now] button"
+    validation: "Check for fast-track banner and one-click button"
+    automatable: true
+    note: "Requires clean submitted review"
+
+  - id: "E6.3-02"
+    epic: "Epic-6.3"
+    requirement: "No fast-track when risk flags exist"
+    test_method: "Open submitted review with issues as approver"
+    expected: "'Detailed Review Recommended' (not fast-track)"
+    validation: "Check for detailed review message; verify fast-track button absent"
+    automatable: true
+
+# ═══════════════════════════════════════════════════════════════════
+# EPIC 7: Ineffective Control Auto-Notification (P0)
+# ═══════════════════════════════════════════════════════════════════
+
+  - id: "E7.1-01"
+    epic: "Epic-7.1"
+    requirement: "Auto-create GRC Task when effectiveness = No"
+    test_method: "Select No for Design/Operating Effectiveness, submit"
+    expected: "GRC Task created with Review ID, Review Name, Failure type"
+    validation: "Check for task creation confirmation or navigate to tasks"
+    automatable: true
+    destructive: true
+    note: "DANGEROUS — creates real GRC Task + email. Use only on designated test reviews."
+
+  - id: "E7.1-02"
+    epic: "Epic-7.1"
+    requirement: "Email notification to Controllership Contact"
+    test_method: "After effectiveness = No and submit, check for notification"
+    expected: "Email sent with control failure summary, direct link, next steps"
+    validation: "Cannot directly verify email delivery via browser — check task creation instead"
+    automatable: false
+    note: "Requires email access or API check"
+
+# ═══════════════════════════════════════════════════════════════════
+# EPIC 8: IPA Validation (P0)
+# ═══════════════════════════════════════════════════════════════════
+
+  - id: "E8.1-01"
+    epic: "Epic-8.1"
+    requirement: "IPA documentation completeness verification on Yes"
+    test_method: "For manual control, check if CLARA verifies IPA fields when Yes selected"
+    expected: "Confirmation if populated; flag if gaps exist"
+    validation: "Check for IPA verification message after Yes selection"
+    automatable: true
+    note: "Requires Manual or IT-Dependent Manual control"
+
+  - id: "E8.2-01"
+    epic: "Epic-8.2"
+    requirement: "N/A prevention for manual controls with IPA"
+    test_method: "On manual control with documented IPA, check what happens when N/A selected"
+    expected: "Guidance: 'The appropriate response should be Yes rather than N/A'"
+    validation: "Check for guidance message when N/A is selected inappropriately"
+    automatable: true
+    note: "Requires Manual control with IPA documentation present"
+
+  - id: "E8.2-02"
+    epic: "Epic-8.2"
+    requirement: "Options to update to Yes or provide exception"
+    test_method: "After N/A prevention triggers, check for options"
+    expected: "[Update to Yes] [Provide Exception Justification] buttons"
+    validation: "Check for action buttons"
+    automatable: true
+
+# ═══════════════════════════════════════════════════════════════════
+# EPIC 9: Intelligent Queue Prioritization (P0)
+# ═══════════════════════════════════════════════════════════════════
+
+  - id: "E9.1-01"
+    epic: "Epic-9.1"
+    requirement: "Stats bar with Open, Overdue/At Risk, Pre-fill Ready counts"
+    test_method: "Navigate to review queue page"
+    expected: "Stats bar: 'Open: N | Overdue/At Risk: N | Pre-fill Ready: N'"
+    validation: "Check for stats bar element with three counts"
+    automatable: true
+    note: "Requires navigation to queue page (not individual review)"
+
+  - id: "E9.1-02"
+    epic: "Epic-9.1"
+    requirement: "Reviews sorted by composite priority score"
+    test_method: "View queue with mix of overdue and normal reviews"
+    expected: "Overdue at top; within same tier: higher rejection count first"
+    validation: "Extract queue order; verify overdue items appear first"
+    automatable: true
+
+  - id: "E9.1-03"
+    epic: "Epic-9.1"
+    requirement: "Pre-fill readiness indicator per review in queue"
+    test_method: "Check each queue item for pre-fill badge"
+    expected: "Reviews with AI drafts show indicator"
+    validation: "Check for pre-fill badge/icon on queue items"
+    automatable: true
+
+# ═══════════════════════════════════════════════════════════════════
+# EPIC 10: Oversight Table (P0) — NOT IN CURRENT PILOT
+# ═══════════════════════════════════════════════════════════════════
+
+  - id: "E10.1-01"
+    epic: "Epic-10.1"
+    requirement: "Natural language query generates oversight table"
+    test_method: "Enter NL prompt in oversight dashboard"
+    expected: "Structured table rendered within 5 seconds"
+    validation: "Table element with correct columns rendered"
+    automatable: false
+    note: "NOT IN PILOT — skip execution"
+    skip: true
+
+  - id: "E10.2-01"
+    epic: "Epic-10.2"
+    requirement: "Only inspection-worthy reviews displayed"
+    test_method: "Verify compliant reviews excluded from oversight table"
+    expected: "Rows only where risk classification != compliant"
+    automatable: false
+    skip: true
+
+# ═══════════════════════════════════════════════════════════════════
+# EPIC 11: AI Governance and State-Based Suppression (P0)
+# ═══════════════════════════════════════════════════════════════════
+
+  - id: "E11.1-01"
+    epic: "Epic-11.1"
+    requirement: "AI fully visible in Draft/In-Progress state"
+    test_method: "Open draft review, check for CLARA content"
+    expected: "CLARA recommendations, insights, 'Generated by Clara' labels all present"
+    validation: "Search page for 'CLARA', 'Generated by Clara', recommendation cards"
+    automatable: true
+
+  - id: "E11.1-02"
+    epic: "Epic-11.1"
+    requirement: "AI suppressed in Final Approved state"
+    test_method: "Open approved review, search for any AI content"
+    expected: "Zero instances of 'CLARA', 'Generated by Clara', AI suggestion markers"
+    validation: "Text search returns 0 matches for all AI keywords"
+    automatable: true
+    note: "Requires approved review — confirmed working on 407615"
+
+  - id: "E11.1-03"
+    epic: "Epic-11.1"
+    requirement: "AI suppressed in Submitted state"
+    test_method: "Open submitted review, search for AI content"
+    expected: "AI content hidden from reviewer view; approver-assist only (if approver)"
+    validation: "As reviewer: zero AI. As approver: summary visible but labeled"
+    automatable: true
+
+  - id: "E11.2-01"
+    epic: "Epic-11.2"
+    requirement: "Suppression is irreversible within review cycle"
+    test_method: "After submission, attempt to re-surface AI (if possible)"
+    expected: "No mechanism exists to re-show AI after transition to Submitted/Approved"
+    validation: "No toggle, button, or URL parameter re-enables AI"
+    automatable: true
+
+  - id: "E11.2-02"
+    epic: "Epic-11.2"
+    requirement: "Fail-safe default on unknown state"
+    test_method: "If state determination fails, check behavior"
+    expected: "Full suppression (fail closed, never open)"
+    validation: "Cannot easily test without system access"
+    automatable: false
+
+  - id: "E11.3-01"
+    epic: "Epic-11.3"
+    requirement: "Export contains zero AI content"
+    test_method: "Export evidence package, search for AI markers"
+    expected: "Zero instances of CLARA, AI-generated, suggestion markers in export"
+    validation: "Download export; text search for AI keywords"
+    automatable: false
+    note: "Requires export functionality and file content analysis"
+
+# ═══════════════════════════════════════════════════════════════════
+# NON-FUNCTIONAL REQUIREMENTS
+# ═══════════════════════════════════════════════════════════════════
+
+  - id: "NFR-PERF-01"
+    epic: "NFR"
+    requirement: "Change detection response < 3 seconds (90th percentile)"
+    test_method: "Measure page load to CLARA content render"
+    threshold: 3000
+    unit: "ms"
+    automatable: true
+
+  - id: "NFR-PERF-02"
+    epic: "NFR"
+    requirement: "Monitoring verification < 3 seconds"
+    test_method: "Measure monitoring status display time"
+    threshold: 3000
+    unit: "ms"
+    automatable: true
+
+  - id: "NFR-PERF-03"
+    epic: "NFR"
+    requirement: "Approver summary generation < 3 seconds"
+    test_method: "Open submitted review as approver, measure summary render"
+    threshold: 3000
+    unit: "ms"
+    automatable: true
+
+  - id: "NFR-PERF-04"
+    epic: "NFR"
+    requirement: "Rejection comment parsing < 5 seconds"
+    test_method: "Open rejected review, measure checklist display time"
+    threshold: 5000
+    unit: "ms"
+    automatable: true
+
+  - id: "NFR-PERF-05"
+    epic: "NFR"
+    requirement: "Evidence link validation < 5 seconds per batch"
+    test_method: "Measure time from validation trigger to results display"
+    threshold: 5000
+    unit: "ms"
+    automatable: true
+
+  - id: "NFR-AVAIL-01"
+    epic: "NFR"
+    requirement: "All review workflows functional without CLARA"
+    test_method: "If CLARA unavailable, verify review still works"
+    expected: "All questions answerable, submit works, no errors"
+    automatable: false
+    note: "Requires CLARA service to be down"
