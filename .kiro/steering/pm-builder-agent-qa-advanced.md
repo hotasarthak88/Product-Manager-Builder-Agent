@@ -583,14 +583,18 @@ Fix Type: {Layer 3: Fix Type}
 ```
 
 ### Team Assignment Logic (Configurable)
-Default routing from `docs/qa-config.yaml`. If not configured, agent asks on first ticket filing:
-- Prompt/AI content issues → AI/ML team lead
-- Frontend/UX rendering → Frontend team lead
-- Backend pipeline/data flow → Backend team lead
-- Quality gate logic → Platform team lead
+The agent does NOT assume a ticketing tool or assignee. On first "File tickets" request for a product, it asks:
+
+1. **"Which tool?"** — SIM-T, Taskei, JIRA, GitHub Issues, or another system
+2. **"Who should I assign to?"** — the PM provides the engineer's alias or team
+3. **"Which room/project/repo?"** — the PM provides the destination
+
+These answers are saved to `docs/qa-config.yaml` and reused for future runs. The PM can change them anytime by saying "change ticket settings."
+
+For sarthah's CLARA instance: tickets go to ppujith via Taskei (SIM room TBD).
 
 ### PM Input Required
-> **First-time setup**: On first "File tickets" request, the agent asks for team assignees and SIM room. Saves to `docs/qa-config.yaml` for reuse. Only asked once per product.
+> **First-time setup**: On first "File tickets" request, the agent asks for tool + assignee + destination. Saves for reuse. Only asked once per product.
 
 ---
 

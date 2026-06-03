@@ -19,28 +19,53 @@ product:
 # TEAM & TICKET CONFIGURATION
 # ─────────────────────────────────────────────────────────────────
 
+# For CLARA-specific work (sarthah's instance):
+# Tickets go to ppujith. SIM room TBD.
+#
+# For ALL OTHER PMs using this agent:
+# The agent will ASK you on first "File tickets" request:
+#   - "Which tool? (SIM-T / Taskei / JIRA / other)"
+#   - "Who should I assign to?"
+#   - "Which room/project?"
+# Your answers are saved here for reuse. You can change anytime.
+
 tickets:
-  sim_room_id: ""  # Taskei room UUID — fill in when available
+  # Set to "ask" to have the agent prompt you on first use
+  # Set to "taskei" or "sim-t" to pre-configure
+  tool: "ask"  
+  
+  # Pre-configured for CLARA (sarthah's instance)
+  # Other PMs: leave blank — agent will ask
+  sim_room_id: ""
   default_assignees:
-    ai_content: "ppujith"       # For AI/prompt/content issues
-    frontend: ""                # For UI/UX rendering issues (TBD)
-    backend: "ppujith"          # For pipeline/data flow issues
-    platform: ""                # For quality gate/workflow issues (TBD)
+    all: "ppujith"  # Single assignee for all CLARA issues
+    # Uncomment below for per-category routing:
+    # ai_content: ""
+    # frontend: ""
+    # backend: ""
+    # platform: ""
+  
   ticket_format: "summary_impact_fix"  # Options: summary_impact_fix | full_three_layer
-  auto_link_to_report: true            # Include GitHub report link in tickets
+  auto_link_to_report: true
 
 # ─────────────────────────────────────────────────────────────────
 # QA RUN CONFIGURATION
 # ─────────────────────────────────────────────────────────────────
 
+# URLs are ALWAYS provided by the PM/SDM — never auto-discovered.
+# The agent does not guess or crawl for test URLs.
+# Say "QA this: {url}" to provide the target.
+
 qa_settings:
   # URLs approved for destructive testing (PM adds via "test this one")
   approved_destructive_urls: []
   
-  # Queue/dashboard URL (for prioritization testing)
-  queue_url: ""  # TBD — fill in when available
+  # Queue/dashboard URL — provided by PM when available
+  queue_url: ""
   
   # BRD/PRD source for acceptance criteria
+  # PM provides their BRD/PRD and agent extracts criteria automatically
+  # Or manually maintain a YAML registry here:
   brd_source: "docs/qa-scenarios/brd-acceptance-criteria.yaml"
   
   # Scenario library location
