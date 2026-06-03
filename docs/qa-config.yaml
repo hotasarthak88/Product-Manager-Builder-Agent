@@ -32,11 +32,14 @@ product:
 tickets:
   # Set to "ask" to have the agent prompt you on first use
   # Set to "taskei" or "sim-t" to pre-configure
-  tool: "ask"  
+  tool: "taskei"  
+  
+  # CLARA UAT Bugs room
+  sim_room_id: "21f4d700-d781-4f2e-9c54-2cebdad03cef"
+  kanban_board_id: "9ea12fa5-9772-416a-bfe9-b79b43a243d3"
+  kanban_board_name: "GRC Clara Pilot UAT - June 2026"
   
   # Pre-configured for CLARA (sarthah's instance)
-  # Other PMs: leave blank — agent will ask
-  sim_room_id: ""
   default_assignees:
     all: "ppujith"  # Single assignee for all CLARA issues
     # Uncomment below for per-category routing:
