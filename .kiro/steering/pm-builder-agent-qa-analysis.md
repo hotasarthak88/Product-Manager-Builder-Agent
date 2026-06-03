@@ -91,58 +91,58 @@ For every issue, the agent proposes a fix with:
 
 ## QA Bug-Finding Heuristics (Learned Patterns)
 
-Based on manual QA patterns identified for CLARA, apply these heuristics when scanning any review:
+These heuristics apply to ANY AI-assisted product feature — not just compliance review tools. They detect common patterns where AI systems fail to deliver consistent, actionable, and trustworthy experiences.
 
 ### Heuristic 1: Content Source Consistency
-**Check**: Does the inline Questionnaire insight match the Full Analysis insight for the same question?
-**Trigger**: If text differs between the two surfaces, flag it.
-**Why**: Users who read the inline first form expectations. If Full Analysis contradicts or significantly enriches, trust erodes.
+**Check**: Does the same information appear differently across multiple UI surfaces?
+**Trigger**: If text/data differs between two views of the same content (e.g., summary vs detail, inline vs modal, card vs full page).
+**Why**: Users who see content in one place form expectations. If another surface contradicts or significantly enriches, trust erodes.
 
 ### Heuristic 2: Jargon/Internal Field Leak
-**Check**: Does any user-facing text contain internal system identifiers (field names, API parameters, database columns)?
-**Trigger**: CamelCase words that aren't proper nouns, terms not in the question text, technical identifiers.
-**Pattern**: `ConfirmationField`, `reviewSetId`, `entityType`, `complianceFlag`
+**Check**: Does any user-facing text contain internal system identifiers?
+**Trigger**: CamelCase words that aren't proper nouns, terms not in the UI label, database column names, API parameter names.
+**Pattern examples**: `ConfirmationField`, `reviewSetId`, `entityType`, `statusCode`, `recordId`
 **Why**: Reveals the AI is referencing the data model, not the user experience.
 
 ### Heuristic 3: Insight vs Reasoning Conflation
-**Check**: Does the inline "Insights" text read like justification (backward-looking: "prior reviews said X") rather than guidance (forward-looking: "verify X before answering")?
-**Trigger**: If the inline text starts with "The control's..." or "All 5 prior reviews..." without telling the user what to DO.
-**Why**: Reasoning explains the AI's choice; Insight guides the user's action. Showing Reasoning as Insight gives justification without direction.
+**Check**: Does the "explanation" or "insight" text read like justification (backward-looking) rather than guidance (forward-looking)?
+**Trigger**: If helper text starts with "The system shows..." or "All previous records..." without telling the user what to DO.
+**Why**: Reasoning explains why the AI chose something; Insight guides the user's next action. Showing Reasoning as Insight gives justification without direction.
 
 ### Heuristic 4: Information at Point of Decision
-**Check**: Is critical information (flags, prior failures, discrepancies) visible at the exact point where the user makes their decision (the radio button/text field)?
-**Trigger**: If important flags only appear in the Executive Summary or Full Analysis but NOT next to the relevant question.
-**Why**: Reviewers answer questions top-to-bottom. If a flag is 5 screens above the question, they'll miss it.
+**Check**: Is critical information visible at the exact point where the user makes their decision?
+**Trigger**: If important warnings only appear in a modal, a separate page, or above/below the decision point — not AT it.
+**Why**: Users act top-to-bottom, left-to-right. If a warning is 5 screens above the decision field, they'll miss it.
 
 ### Heuristic 5: Template/Repetitive Content
-**Check**: Do multiple reviews start with the same opening phrase or follow the same rigid template?
-**Trigger**: If >50% of reviews share identical opening sentences.
+**Check**: Does AI-generated content across multiple instances start with the same phrase or follow the same rigid template?
+**Trigger**: If >50% of instances share identical opening sentences or structure.
 **Why**: Template-feeling content trains users to skip it. The most valuable real estate (first sentence) is wasted.
 
 ### Heuristic 6: Obvious Statement Waste
 **Check**: Does the AI tell the user something they can already see on the page?
-**Trigger**: "All 13 questions are currently blank" (visible), "This is a draft review" (visible), "No attachments" (visible in attachment table).
-**Why**: Wastes cognitive bandwidth. The first thing the AI says should be something the user DOESN'T already know.
+**Trigger**: Restating visible UI state ("This form is empty," "No items selected," "You haven't entered anything").
+**Why**: Wastes cognitive bandwidth. AI should add value the user can't derive from the page alone.
 
 ### Heuristic 7: Word Limit Artifacts
-**Check**: Does the inline text feel truncated, compressed, or like it chose the shorter of two options?
-**Trigger**: Inline is significantly less specific than Full Analysis; inline drops names, dates, or specific data points that Full Analysis includes.
-**Why**: Eval constraints (120-150 words) may force the model to pick shorter content even when the longer content is more valuable.
+**Check**: Does compressed/inline content feel truncated or like it chose a shorter option over a richer one?
+**Trigger**: Inline is significantly less specific than the expanded/detailed view; names, dates, or data points present in detail view but absent from inline.
+**Why**: Character/word limits may force the AI to pick shorter content even when longer content is more valuable.
 
-### Heuristic 8: Cross-Question Consistency
-**Check**: Are CLARA's recommendations internally consistent across questions within the same review?
-**Trigger**: If Q2 says "evidence is available" but the Evidence Matrix shows "no evidence found," flag the contradiction.
-**Why**: Internal contradictions within a single review completely destroy trust.
+### Heuristic 8: Cross-Element Consistency
+**Check**: Are AI recommendations internally consistent across different parts of the same page/flow?
+**Trigger**: If one element says "X is true" but another element's data shows X is false.
+**Why**: Internal contradictions within a single session completely destroy trust.
 
-### Heuristic 9: Control-Type Awareness
-**Check**: Does the CLARA response correctly account for the control type (IT General vs Application vs Manual)?
-**Trigger**: Suggesting IPA actions for automated controls, or N/A for manual controls with documented IPA.
-**Why**: Wrong control-type handling produces incorrect recommendations that could lead to audit findings.
+### Heuristic 9: Context-Type Awareness
+**Check**: Does the AI correctly adapt its behavior based on the type/category of the entity it's operating on?
+**Trigger**: Applying the wrong logic for the entity type (e.g., suggesting actions for Type A that only apply to Type B).
+**Why**: Wrong context-type handling produces incorrect recommendations that could lead to downstream errors.
 
 ### Heuristic 10: Historical Context Accuracy
-**Check**: Do claims about "prior reviews" match the actual historical data?
-**Trigger**: "All 5 prior reviews answered Yes" but the control page shows a "No" in a recent quarter.
-**Why**: Inaccurate historical claims are factual errors that could lead to incorrect attestations.
+**Check**: Do claims about past behavior/data match actual records?
+**Trigger**: "All previous instances show X" but one previous instance clearly shows Y.
+**Why**: Inaccurate historical claims are factual errors that compound when users rely on them for decisions.
 
 ---
 

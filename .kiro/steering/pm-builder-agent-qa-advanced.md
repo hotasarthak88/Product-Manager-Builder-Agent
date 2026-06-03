@@ -79,8 +79,11 @@ Performs actions on the review (attach files, select answers, type responses) an
 8. Offer to undo changes
 ```
 
-### PM Input Required
-> **Question for PM**: Which reviews in gamma are safe to modify for destructive QA testing? Should I create a naming convention (e.g., "QA-TEST-" prefix) or is there a specific set of test reviews I should use?
+### Safety — Naming Convention
+Destructive testing is ONLY approved when the PM says **"test this one"** for a specific URL. This convention applies across ANY product — not just CLARA reviews. The PM explicitly grants permission per-URL, per-session.
+
+### Default Ticket Assignee (Configurable per Product)
+Tickets are assigned based on the product's team configuration stored in `docs/qa-config.yaml`. If no config exists, ask the PM on first ticket filing.
 
 ---
 
@@ -224,7 +227,7 @@ acceptance_criteria:
 ```
 
 ### PM Input Required
-> **Question for PM**: Should I extract the full BRD acceptance criteria into this registry now? I have the BRD content from our earlier session. This would create ~50 testable assertions from the 11 Epics.
+> **First-time setup**: The agent will ask for the BRD/PRD document on first QA run for a new product. It extracts testable criteria automatically. No manual YAML editing needed.
 
 ---
 
@@ -307,7 +310,7 @@ On first QA run (or when PM says "set baseline"):
 - Weekly as part of regression suite
 
 ### PM Input Required
-> **Question for PM**: Want me to capture baselines for all 12 reviews now, so we can detect regressions after engineering makes fixes? Or just baseline the primary test review (407759)?
+> **Baselines**: Say "Set QA baseline for {url}" when you're ready. The agent handles the rest. Typically done after engineering confirms a fix is deployed.
 
 ---
 
@@ -438,10 +441,7 @@ scenarios:
 ```
 
 ### PM Input Required
-> **Question for PM**: 
-> 1. Should I create the `docs/qa-scenarios/` directory and seed it with the scenarios we tested today (invalid evidence, renamed file)?
-> 2. Do you have test PDF files I should use, or should I generate dummy PDFs for testing?
-> 3. Any additional scenarios you want me to add based on your domain knowledge of common failure modes?
+> **First-time setup**: On first QA run, the agent asks: "What URL should I test?" and "Do you have a BRD/PRD I should reference?" That's it. Scenarios can be added incrementally as the PM discovers new test cases.
 
 ---
 
@@ -524,8 +524,11 @@ Maintains browser authentication state between QA runs, eliminating repeated Mid
 4. If expired: prompt PM to authenticate in headed browser
 ```
 
-### PM Input Required
-> **Question for PM**: Should I update your MCP config to use `--headed` mode with a persistent user-data-dir? This means a Chrome window stays open during QA runs. Alternatively, I can keep headless and just prompt you to re-auth when sessions expire (current behavior).
+### Configuration (Per Product)
+
+Session persistence is configured per-product in the MCP settings. The `--user-data-dir` keeps cookies between sessions so internal Amazon apps (Midway-authenticated) don't require re-authentication every run.
+
+For teams using this agent on different products, each product can have its own browser profile to avoid cookie conflicts.
 
 ---
 
@@ -579,17 +582,15 @@ Fix Type: {Layer 3: Fix Type}
 *Filed by pm-builder-agent from QA report dated {date}*
 ```
 
-### Team Assignment Logic
-- Prompt/AI content issues → CLARA AI team
-- Frontend/UX rendering → GRC Frontend team
-- Backend pipeline/data flow → CLARA Backend team
-- Quality gate logic → GRC Platform team
+### Team Assignment Logic (Configurable)
+Default routing from `docs/qa-config.yaml`. If not configured, agent asks on first ticket filing:
+- Prompt/AI content issues → AI/ML team lead
+- Frontend/UX rendering → Frontend team lead
+- Backend pipeline/data flow → Backend team lead
+- Quality gate logic → Platform team lead
 
 ### PM Input Required
-> **Question for PM**: 
-> 1. What SIM room should CLARA tickets go to? (I need the room ID for Taskei)
-> 2. Who should be the default assignee for CLARA AI issues vs GRC Frontend issues?
-> 3. Should tickets include the full three-layer analysis, or just the summary + proposed fix?
+> **First-time setup**: On first "File tickets" request, the agent asks for team assignees and SIM room. Saves to `docs/qa-config.yaml` for reuse. Only asked once per product.
 
 ---
 

@@ -1,0 +1,107 @@
+# PM Builder Agent — QA Configuration
+# This file configures product-specific QA settings.
+# Each PM team customizes this for their product.
+#
+# USAGE: The agent reads this file on every QA run.
+#        Edit values below to match your product and team.
+
+# ─────────────────────────────────────────────────────────────────
+# PRODUCT CONFIGURATION
+# ─────────────────────────────────────────────────────────────────
+
+product:
+  name: "CLARA Reviews AI Assistant"  # Your product name
+  environment: "gamma"                 # gamma | beta | prod | localhost
+  base_url: "https://gamma.grc.a2z.com"  # Base URL for your product
+  description: "AI-assisted SOX compliance review tool"
+
+# ─────────────────────────────────────────────────────────────────
+# TEAM & TICKET CONFIGURATION
+# ─────────────────────────────────────────────────────────────────
+
+tickets:
+  sim_room_id: ""  # Taskei room UUID — fill in when available
+  default_assignees:
+    ai_content: "ppujith"       # For AI/prompt/content issues
+    frontend: ""                # For UI/UX rendering issues (TBD)
+    backend: "ppujith"          # For pipeline/data flow issues
+    platform: ""                # For quality gate/workflow issues (TBD)
+  ticket_format: "summary_impact_fix"  # Options: summary_impact_fix | full_three_layer
+  auto_link_to_report: true            # Include GitHub report link in tickets
+
+# ─────────────────────────────────────────────────────────────────
+# QA RUN CONFIGURATION
+# ─────────────────────────────────────────────────────────────────
+
+qa_settings:
+  # URLs approved for destructive testing (PM adds via "test this one")
+  approved_destructive_urls: []
+  
+  # Queue/dashboard URL (for prioritization testing)
+  queue_url: ""  # TBD — fill in when available
+  
+  # BRD/PRD source for acceptance criteria
+  brd_source: "docs/qa-scenarios/brd-acceptance-criteria.yaml"
+  
+  # Scenario library location
+  scenarios_path: "docs/qa-scenarios/"
+  
+  # Test files for evidence upload scenarios
+  test_files_path: "docs/qa-test-files/"
+  
+  # Screenshot baselines location
+  baselines_path: "docs/qa-baselines/"
+  
+  # Reports output location
+  reports_path: "docs/qa-reports/"
+
+# ─────────────────────────────────────────────────────────────────
+# HEURISTIC TUNING (Product-Specific)
+# ─────────────────────────────────────────────────────────────────
+
+heuristics:
+  # Terms that are ALLOWED in user-facing text (won't trigger jargon detection)
+  allowed_technical_terms:
+    - "CloudWatch"
+    - "QuickSight"
+    - "DataCentral"
+    - "GRC-Next"
+    - "Carnaval"
+    - "Clearwater"
+    - "Delta"
+    - "NAWS"
+    - "Apollo"
+  
+  # Internal field names that should NEVER appear in user-facing text
+  blocked_internal_terms:
+    - "ConfirmationField"
+    - "reviewSetId"
+    - "entityType"
+    - "complianceFlag"
+    - "empty array"
+  
+  # Evidence-related question identifiers (for cross-question consistency checks)
+  evidence_questions:
+    - question_number: 3
+      topic: "Is evidence available and retained?"
+    - question_number: 6
+      topic: "What actions did you take to confirm operating effectiveness?"
+
+# ─────────────────────────────────────────────────────────────────
+# PERSONA CONFIGURATION
+# ─────────────────────────────────────────────────────────────────
+
+personas:
+  reviewer:
+    name: "Review Owner"
+    description: "First Line — executes quarterly reviews"
+    test_cases_file: "docs/qa-reports/clara-review-owner-test-cases.md"
+  approver:
+    name: "Review Approver"  
+    description: "L7+ manager — approves/rejects submitted reviews"
+    test_cases_file: "docs/qa-reports/clara-reviewer-test-cases.md"
+  oversight:
+    name: "Second/Third Line"
+    description: "SOX leadership, Audit, Controllership"
+    test_cases_file: "docs/qa-reports/clara-oversight-test-cases.md"
+    in_pilot: false  # Not in current pilot — skip execution
