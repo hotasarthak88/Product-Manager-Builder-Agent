@@ -1,4 +1,4 @@
-# PM Builder Agent
+# PM Agent Builder
 
 An AI-powered product management agent built on Kiro that drives the full PM lifecycle — from problem definition through shipping. Designed for Amazon PMTs to use across any product, any team, any domain.
 
